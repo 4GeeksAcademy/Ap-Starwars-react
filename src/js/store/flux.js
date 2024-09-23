@@ -12,7 +12,11 @@ const getState = ({ getStore, getActions, setStore }) => {
 					background: "white",
 					initial: "white"
 				}
-			]
+			], 
+			characters: [], 
+			planets:[],
+			starships:[],
+			favorites:[],
 		},
 		actions: {
 			// Use getActions to call a function within a fuction
@@ -37,7 +41,32 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 				//reset the global store
 				setStore({ demo: demo });
-			}
+			},
+			loadCharacters: debounce(async ()=>{
+				try { 
+					const response = await fetch('https://www.swapi.tech/api/people');
+					const data = response.json();
+					const results = data.results;
+
+					const characters = [];
+					const delay = (ms) => new promise (resolve => setTimout(resolve, ms));
+
+					for (let i= 0; i < results.length; i++){
+						try {
+							const charactersResponse = await fetch(`https://www.swapi.tech/api/people/${results[i].uid}`);
+							if (!charactersResponse.ok){
+								throw new Error(`fail to fetch character's id:${results[i].uid}`)
+							}
+							const charactersData = await charactersResponse.json(); 
+							characters.push(charactersData.result)
+						} catch (error) {
+							console.error("error fetching character:", error);
+						}
+					}
+				} catch (error) {
+					console.error("error fetching characters:", error)
+				}
+			}, 300),
 		}
 	};
 };
