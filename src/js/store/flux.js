@@ -12,14 +12,14 @@ const getState = ({ getStore, getActions, setStore }) => {
 					background: "white",
 					initial: "white"
 				}
-			], 
-			characters: [], 
-			planets:[],
-			starships:[],
-			favorites:[],
+			],
+			characters: [],
+			planets: [],
+			starships: [],
+			favorites: [],
 		},
 		actions: {
-			// Use getActions to call a function within a fuction
+			// Use getActions to call a function within a function
 			exampleFunction: () => {
 				getActions().changeColor(0, "green");
 			},
@@ -42,31 +42,63 @@ const getState = ({ getStore, getActions, setStore }) => {
 				//reset the global store
 				setStore({ demo: demo });
 			},
-			loadCharacters: debounce(async ()=>{
-				try { 
+			loadCharacters: async () => {
+				try {
 					const response = await fetch('https://www.swapi.tech/api/people');
-					const data = response.json();
+					const data = await response.json();
 					const results = data.results;
 
-					const characters = [];
-					const delay = (ms) => new promise (resolve => setTimout(resolve, ms));
-
-					for (let i= 0; i < results.length; i++){
-						try {
-							const charactersResponse = await fetch(`https://www.swapi.tech/api/people/${results[i].uid}`);
-							if (!charactersResponse.ok){
-								throw new Error(`fail to fetch character's id:${results[i].uid}`)
-							}
-							const charactersData = await charactersResponse.json(); 
-							characters.push(charactersData.result)
-						} catch (error) {
-							console.error("error fetching character:", error);
-						}
-					}
+					setStore({ characters: results });
 				} catch (error) {
-					console.error("error fetching characters:", error)
+					console.error("error fetching characters:", error);
 				}
-			}, 300),
+			},
+			loadPlanets: async () => {
+				try {
+					const response = await fetch('https://www.swapi.tech/api/planets');
+					const data = await response.json();
+					const results = data.results;
+
+					setStore({ planets: results });
+				} catch (error) {
+					console.error("error fetching planets:", error);
+				}
+			},
+			loadStarships: async () => {
+				try {
+					const response = await fetch('https://www.swapi.tech/api/starships');
+					const data = await response.json();
+					const results = data.results;
+
+					setStore({ starships: results });
+				} catch (error) {
+					console.error("error fetching starships:", error);
+				}
+			},
+			// Add to Favorites
+			addFavorites: (newFavorite) => {
+				const store = getStore();
+				const favorites = store.favorites;
+
+				console.log("Adding to favorites:", newFavorite);
+
+				const isFavoriteExists = favorites.some(favorite =>
+					favorite.name === newFavorite.name && favorite.type === newFavorite.type
+				);
+
+				if (!isFavoriteExists) {
+					console.log("Favorite not found, adding:", newFavorite);
+					// Verificar que no se agregue de nuevo el character //
+					// setStore({ favorites: [...getStore().favorites, newFavorite] })
+					setStore({ favorites: [...favorites, newFavorite] })
+				} else {
+					console.log("Favorite already exists, not adding:", newFavorite);
+				}
+			},
+			removeFavorites: (noFavorite) => {
+				const resultado = getStore().favorites.filter((item) => item.name !== noFavorite);
+				setStore({ favorites: resultado })
+			}
 		}
 	};
 };
